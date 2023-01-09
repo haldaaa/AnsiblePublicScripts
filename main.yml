@@ -1,0 +1,50 @@
+---
+- hosts: centos
+  tasks:
+  - name: Téléchargez le package d'installation d'IntelliJ
+    get_url:
+      url: https://download.jetbrains.com/idea/ideaIC-{{ intelliJ_version }}-no-jdk.tar.gz
+      dest: /tmp/intellij.tar.gz
+    vars:
+      intelliJ_version: 2021.3
+
+  - name: Installez Java
+    yum:
+      name: java-1.8.0-openjdk
+      state: present
+
+  - name: Décompressez le package d'installation d'IntelliJ
+    unarchive:
+      src: /tmp/intellij.tar.gz
+      dest: /opt/
+
+  - name: Créez un lien symbolique vers l'exécutable d'IntelliJ
+    file:
+      src: /opt/idea-IC-{{ intelliJ_version }}/bin/idea.sh
+      dest: /usr/local/bin/intellij
+      state: link
+
+  - name: Créez un fichier de démarrage pour IntelliJ
+    template:
+      src: templates/intellij.service.j2
+      dest: /etc/systemd/system/intellij.service
+    vars:
+      intelliJ_path: /opt/idea-IC-{{ intelliJ_version }}/bin/idea.sh
+      
+
+ - name: Vérifiez si Java 8 est installé
+    shell: java -version 2>&1 | grep "1.8"
+    register: java_check
+    ignore_errors: true
+
+  - name: Installez Java 8 si nécessaire
+    yum:
+      name: java-1.8.0-openjdk
+      state: present
+    when: java_check.rc != 0
+
+  - name: Redémarrez tous les services
+    service:
+      name: "*"
+      state: restarted
+    when: java_check.rc != 0
