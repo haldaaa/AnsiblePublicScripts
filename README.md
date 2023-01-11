@@ -1,6 +1,6 @@
 # AnsiblePublicScripts
 
-Plusieurs scripts public dans un but pédagogique.
+Plusieurs scripts public dans un but pédagogique et à destination des élèves pour la session DevOps DGFIP Bordeaux
 
 
 1) Créé un fichier sur une machine cible avec Ansible : playbook.yaml
